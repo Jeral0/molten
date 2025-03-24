@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Fetcher</title>
+    
+</head>
+
+<body>
+    <h2>Enter Secondary Password</h2>
+    <input type="password" id="secondaryPassword" placeholder="Enter password">
+    <button onclick="fetchPassword()">Get Password</button>
+    <p id="password"></p>
+
+    <script>
+        async function fetchPassword() {
+            const passwordCheck = document.getElementById("secondaryPassword").value;
+            try {
+                const response = await fetch("http://localhost:3000/get-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ passwordCheck })
+                });
+
+                const data = await response.json();
+                const key = 123;
+                const shiftValue = 54;
+                console.log(decode(data.password, key, shiftValue))
+                if (response.ok) {
+                    document.getElementById("password").innerText = `Password: ${data.password}`;
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching password:", error);
+            }
+        }
+        function decode(encodedString, key, shiftValue) {
+            let decodedString = '';
+            for (let i = 0; i < encodedString.length; i++) {
+                let encodedCharCode = encodedString.charCodeAt(i);
+                // XOR the character with the key to reverse the encoding step
+                let shiftedCharCode = encodedCharCode ^ key;
+                // Reverse the shift by subtracting the shift value
+                let originalCharCode = (shiftedCharCode - shiftValue + 256) % 256;
+                decodedString += String.fromCharCode(originalCharCode);
+            }
+
+            return decodedString;
+        }
+
+    </script>
+</body>
+
+</html>
